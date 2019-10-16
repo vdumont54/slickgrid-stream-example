@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { GridOption, AngularGridInstance, Column } from 'angular-slickgrid';
+import { GridOption, AngularGridInstance, Column, ExtensionName } from 'angular-slickgrid';
 import { RowDetailStreamPreloadComponent } from './componnents/row-detail-stream-preload/row-detail-stream-preload.component';
 import { RowDetailStreamComponent } from './componnents/row-detail-stream/row-detail-stream.component';
 
@@ -22,6 +22,7 @@ export class AppComponent implements OnInit{
   ];
   gridOptions: GridOption = {};
   dataset: any[] = [];
+  expandedRows:any[] = [];
 
   ngOnInit(){
 
@@ -37,12 +38,23 @@ export class AppComponent implements OnInit{
         panelRows: 3,
         viewComponent: RowDetailStreamComponent,
         preloadComponent: RowDetailStreamPreloadComponent,
-        loadOnce: true
+        loadOnce: true,
+        useRowClick:false,
+        onAfterRowDetailToggle: (e, args)=>{
+          let index = this.expandedRows.indexOf(args.item.id);
+          if(index==-1 && !args.item.__collapsed){
+            this.expandedRows.push(args.item.id);
+          }
+          if(index>-1 && args.item.__collapsed){
+            this.expandedRows.splice(index,1);
+          }
+        }
       }
     };
   }
 
   angularGrid:AngularGridInstance;
+
   angularGridReady(angularGrid: AngularGridInstance) {
     this.angularGrid = angularGrid;
 
@@ -55,8 +67,8 @@ export class AppComponent implements OnInit{
   processDetail(item:any) {
     return new Promise((resolve)=>{
       setTimeout(() => {
-          resolve(item);
-      }, 1000);
+        resolve(item);        
+      }, 0);
     });
   }
 
@@ -70,7 +82,19 @@ export class AppComponent implements OnInit{
         score: Math.random()*100
       })
     }
+
+    const rowDetailInstance = this.angularGrid.extensionService.getSlickgridAddonInstance(ExtensionName.rowDetailView);
+    // let expandedRows = rowDetailInstance.getExpandedRows();
+    // console.log(expandedRows);
+
     this.angularGrid.gridService.upsertItems(dataset,{highlightRow:false});
     this.dataset = dataset;
+
+    this.expandedRows.forEach(row => {
+      let found = dataset.find(x=>x.id==row);
+      if(found){
+        rowDetailInstance.expandDetailView(found)
+      }
+    });
   }
 }
