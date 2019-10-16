@@ -61,7 +61,7 @@ export class AppComponent implements OnInit{
     this.setData();
     setInterval(()=>{
       this.setData();
-    },5000);
+    },1000);
   }
 
   processDetail(item:any) {
@@ -90,11 +90,14 @@ export class AppComponent implements OnInit{
     this.angularGrid.gridService.upsertItems(dataset,{highlightRow:false});
     this.dataset = dataset;
 
-    this.expandedRows.forEach(row => {
-      let found = dataset.find(x=>x.id==row);
-      if(found){
-        rowDetailInstance.expandDetailView(found)
-      }
-    });
+    setTimeout(() => {
+      this.expandedRows.forEach(row => {
+        let found = dataset.find(x=>x.id==row);
+        if(found){
+          rowDetailInstance.expandDetailView(found)
+        }
+      });  
+    }, 0);
+    
   }
 }
